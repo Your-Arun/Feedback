@@ -103,29 +103,9 @@ app.post("/save-token", async (req, res) => {
   }
 });
 
-/* ---------------- SAVE FEEDBACK ---------------- */
-app.post("/feedback", async (req, res) => {
+/* ---------------- NOTIFICATION HELPER ---------------- */
+const sendPushNotifications = async (entry) => {
   try {
-    const { message, type: manualType } = req.body;
-
-    if (!message || !message.trim()) {
-      return res.status(400).json({ error: "Message required" });
-    }
-
-    // 🔥 Use manual type if provided (from QR/Admin), otherwise auto-detect
-    const type = manualType || detectType(message);
-
-    const entry = new Feedback({
-      message,
-      type,
-    });
-
-    await entry.save();
-
-    // Real-time emit
-    io.emit("newFeedback", entry);
-
-    /* -------- PUSH NOTIFICATION -------- */
     const tokens = await AdminToken.find();
     let messages = [];
 
@@ -138,15 +118,14 @@ app.post("/feedback", async (req, res) => {
       messages.push({
         to: admin.token,
         sound: "default",
-        title: `📢 Naya ${type} Aaya Hai`,
-        body: message,
+        title: `📢 Naya ${entry.type} Aaya Hai`,
+        body: entry.message,
         data: { id: entry._id },
         priority: "high",
       });
     }
 
     const chunks = expo.chunkPushNotifications(messages);
-
     for (let chunk of chunks) {
       try {
         await expo.sendPushNotificationsAsync(chunk);
@@ -154,15 +133,77 @@ app.post("/feedback", async (req, res) => {
         console.error("Push Error:", error);
       }
     }
+  } catch (err) {
+    console.error("Notification helper error:", err);
+  }
+};
+
+/* ---------------- SAVE FEEDBACK ---------------- */
+app.post("/feedback", async (req, res) => {
+  try {
+    const { message, type: manualType, isDraft = false } = req.body;
+
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: "Message required" });
+    }
+
+    const type = manualType || detectType(message);
+
+    const entry = new Feedback({
+      message,
+      type,
+      isDraft,
+    });
+
+    await entry.save();
+
+    // Only emit and notify if NOT a draft
+    if (!isDraft) {
+      io.emit("newFeedback", entry);
+      await sendPushNotifications(entry);
+    }
 
     res.status(201).json({
       success: true,
-      type,
+      data: entry,
     });
 
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+/* ---------------- UPDATE FEEDBACK (Draft to Final / UI Typing) ---------------- */
+app.patch("/feedback/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { message, type: manualType, isDraft } = req.body;
+
+    const oldEntry = await Feedback.findById(id);
+    if (!oldEntry) return res.status(404).json({ error: "Not found" });
+
+    const newType = manualType || detectType(message || oldEntry.message);
+    
+    const wasDraft = oldEntry.isDraft;
+    
+    // Update fields
+    if (message !== undefined) oldEntry.message = message;
+    if (newType !== undefined) oldEntry.type = newType;
+    if (isDraft !== undefined) oldEntry.isDraft = isDraft;
+
+    await oldEntry.save();
+
+    // If it was a draft and is now finalized, notify!
+    if (wasDraft && oldEntry.isDraft === false) {
+      io.emit("newFeedback", oldEntry);
+      await sendPushNotifications(oldEntry);
+    }
+
+    res.json({ success: true, data: oldEntry });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Update failed" });
   }
 });
 

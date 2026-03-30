@@ -12,6 +12,7 @@ function App() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null); // 'success' | 'error' | null
+  const [draftId, setDraftId] = useState(null);
 
   // 🎤 Speech Recognition Setup
   const [isRecording, setIsRecording] = useState(false);
@@ -43,26 +44,66 @@ function App() {
     }
   };
 
+  // 🔄 Real-time Draft Saving (Debounced)
+  useEffect(() => {
+    if (!message.trim()) return;
+
+    const timeout = setTimeout(async () => {
+      try {
+        if (!draftId) {
+          const res = await axios.post(API_URL, {
+            message: message.trim(),
+            type: type,
+            isDraft: true
+          });
+          if (res.data?.data?._id) setDraftId(res.data.data._id);
+        } else {
+          await axios.patch(`${API_URL}/${draftId}`, {
+            message: message.trim(),
+            type: type,
+            isDraft: true
+          });
+        }
+      } catch (err) {
+        console.error("Draft sync failed", err);
+      }
+    }, 1500); // 1.5s delay after typing stops
+
+    return () => clearTimeout(timeout);
+  }, [message, type, draftId]);
+
   const handleSubmit = async () => {
     if (!message.trim()) return;
 
-    setLoading(true);
-    setStatus(null);
+    // 🚀 Optimistic UI: Show success immediately!
+    const finalMessage = message.trim();
+    const finalType = type;
+    const currentDraftId = draftId;
 
+    setStatus("success");
+    setMessage("");
+    setDraftId(null);
+    setTimeout(() => setStatus(null), 5000);
+
+    // 🏎️ Backend Sync in Background
     try {
-      await axios.post(API_URL, {
-        message: message.trim(),
-        type: type,
-      });
-      setStatus("success");
-      setMessage("");
-      setTimeout(() => setStatus(null), 5000);
+      if (currentDraftId) {
+        await axios.patch(`${API_URL}/${currentDraftId}`, {
+          message: finalMessage,
+          type: finalType,
+          isDraft: false // Finalize it!
+        });
+      } else {
+        await axios.post(API_URL, {
+          message: finalMessage,
+          type: finalType,
+          isDraft: false
+        });
+      }
     } catch (error) {
-      console.error(error);
-      setStatus("error");
-      setTimeout(() => setStatus(null), 5000);
-    } finally {
-      setLoading(false);
+      console.error("Background submission failed:", error);
+      // We don't revert UI here to maintain the "fast" feeling, 
+      // but in a production app you might want a retry or a subtle error indicator.
     }
   };
 
@@ -130,10 +171,10 @@ function App() {
           <button 
             className="submit-btn" 
             onClick={handleSubmit}
-            disabled={loading || !message.trim()}
+            disabled={!message.trim()}
           >
-            {loading ? "Sending..." : "भेजें"}
-            {!loading && <Send size={18} />}
+            भेजें
+            <Send size={18} />
           </button>
         </div>
 
