@@ -5,9 +5,11 @@
 }
 
 :root {
-  --primary: #a855f7;
-  --primary-dark: #7e22ce;
+  --primary: #8b5cf6;
+  --primary-dark: #6d28d9;
   --primary-light: #f3e8ff;
+  --feedback: #10b981;
+  --feedback-light: #ecfdf5;
   --complaint: #ef4444;
   --complaint-light: #fef2f2;
 }
@@ -40,35 +42,48 @@ body {
 
 .header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .logo {
-  width: 70px;
-  height: 70px;
-  border-radius: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);
+  width: 80px;
+  height: auto;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 10px 15px rgba(139, 92, 246, 0.3));
+}
+
+.text-center {
+  text-align: center;
+}
+
+h5.text-center {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--primary-dark);
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+  opacity: 0.8;
 }
 
 .title {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--primary-dark);
-  margin-bottom: 4px;
+  font-size: 32px;
+  font-weight: 950;
+  color: #0f172a;
+  margin-bottom: 8px;
+  letter-spacing: -1px;
 }
 
 .subtitle {
-  font-size: 14px;
+  font-size: 16px;
   color: #64748b;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* SELECTOR GROUP */
 .selector-group {
   display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 16px;
+  margin-bottom: 28px;
 }
 
 .select-btn {
@@ -77,28 +92,50 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12px;
-  border-radius: 16px;
+  padding: 16px 12px;
+  border-radius: 20px;
   border: 2px solid #f1f5f9;
-  background: #f8fafc;
+  background: #ffffff;
   cursor: pointer;
-  transition: all 0.2s;
-  gap: 6px;
-  font-weight: 700;
-  font-size: 13px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 8px;
+  font-weight: 800;
+  font-size: 14px;
   color: #64748b;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.select-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.select-btn:hover {
+  border-color: #e2e8f0;
+  transform: translateY(-2px);
 }
 
 .select-btn.feedback.active {
-  border-color: var(--primary);
-  background: var(--primary-light);
-  color: var(--primary-dark);
+  border-color: var(--feedback);
+  background: linear-gradient(135deg, var(--feedback) 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);
 }
 
 .select-btn.complaint.active {
   border-color: var(--complaint);
-  background: var(--complaint-light);
-  color: var(--complaint);
+  background: linear-gradient(135deg, var(--complaint) 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.4);
+}
+
+.select-btn.active svg {
+  transform: scale(1.2);
+  color: white;
+}
+
+.select-btn.active span {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* TEXTAREA */
@@ -108,24 +145,25 @@ body {
 
 .styled-textarea {
   width: 100%;
-  min-height: 140px;
-  padding: 18px;
-  border-radius: 18px;
-  border: 1.5px solid #e2e8f0;
-  background: #ffffff; /* Explicit white background */
-  color: #1e293b; /* Explicit dark text color */
-  font-size: 15px;
+  min-height: 160px;
+  padding: 20px;
+  border-radius: 24px;
+  border: 2px solid #f1f5f9;
+  background: #f8fafc;
+  color: #1e293b;
+  font-size: 16px;
   font-family: inherit;
   resize: none;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   line-height: 1.6;
   outline: none;
 }
 
 .styled-textarea:focus {
   border-color: var(--primary);
-  background: #fff;
-  box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1);
+  background: #ffffff;
+  box-shadow: 0 0 0 5px rgba(139, 92, 246, 0.1);
+  transform: translateY(-2px);
 }
 
 /* BUTTONS */
@@ -162,17 +200,25 @@ body {
 
 .submit-btn {
   flex: 1;
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: white;
-  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.submit-btn:hover {
-  background: var(--primary-dark);
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px -5px rgba(139, 92, 246, 0.5);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .submit-btn:disabled {
-  background: #cbd5e1;
+  background: #e2e8f0;
+  color: #94a3b8;
   box-shadow: none;
   cursor: not-allowed;
 }
