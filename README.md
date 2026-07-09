@@ -9,9 +9,9 @@ A modernized, premium real-time customer feedback and complaint management syste
 | Module | Purpose | Live Link / Location |
 | :--- | :--- | :--- |
 | **📲 QR Feedback Portal** | Customer-facing portal to submit reviews/complaints | [Launch Portal](https://sanghi-brothers-feedback.onrender.com/) |
-| **📊 Admin Dashboard** | Admin panel to review, filter, and resolve requests | [Admin Website (React)](https://feedback-admin-website.onrender.com/) / [Local Folders](file:///e:/Products/Jo%20Hogya%20hai%20🟢🟢🟢/Feedback_App/Feedback/Website_Admin) |
 | **⚙️ Backend Server** | REST API & Socket.io engine | [API Endpoint](https://feedback-backend-fdux.onrender.com/) |
 | **📦 Android Application** | Mobile Staff App APK | [Download Android APK (base.apk)](file:///e:/Products/Jo%20Hogya%20hai%20🟢🟢🟢/Feedback_App/Feedback/apk%20file/base.apk) |
+
 
 ---
 
